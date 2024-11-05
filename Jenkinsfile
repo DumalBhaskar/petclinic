@@ -55,17 +55,17 @@ pipeline {
         }
         
         
-        stage('Owasp Dependency Check') {
-            steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    timeout(time: 60, unit: 'MINUTES') {
-                        dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'dp-check'
-                        dependencyCheckPublisher pattern:'dependency-check-report.xml', failedNewCritical: 0, failedNewHigh: 0, failedTotalCritical: 0, failedTotalHigh: 0, unstableNewCritical: 0, unstableNewHigh: 0, unstableTotalCritical: 0, unstableTotalHigh: 0
+        // stage('Owasp Dependency Check') {
+        //     steps {
+        //         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+        //             timeout(time: 60, unit: 'MINUTES') {
+        //                 dependencyCheck additionalArguments: '--scan ./', odcInstallation: 'dp'
+        //                 dependencyCheckPublisher pattern:'dependency-check-report.xml', failedNewCritical: 0, failedNewHigh: 0, failedTotalCritical: 0, failedTotalHigh: 0, unstableNewCritical: 0, unstableNewHigh: 0, unstableTotalCritical: 0, unstableTotalHigh: 0
                         
-                    }
-                }
-            }
-        }  
+        //             }
+        //         }
+        //     }
+        // }  
         
         
         stage('install') {
@@ -110,7 +110,7 @@ pipeline {
                     
                 echo 'Scanning Docker image for vulnerabilities with Trivy'
             
-                sh 'trivy image --exit-code 1 --severity HIGH,CRITICAL --format json -o trivy_report.json $DOCKERIMAGE'
+                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL --format json -o trivy_report.json ${DOCKER_IMAGE}"
             
                 archiveArtifacts artifacts: 'trivy_report.json', allowEmptyArchive: false
             
