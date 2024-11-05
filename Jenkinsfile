@@ -7,9 +7,9 @@ pipeline {
     }
     
     environment {
-     def commitId = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()    
+     COMMIT_ID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()    
      IMAGE_NAME =  'dumalbhaskar/petclinic'
-     IMAGE_TAG  =  "${BUILD_NUMBER}-${commitId}"
+     IMAGE_TAG  =  "${BUILD_NUMBER}-${COMMIT_ID}"
      DOCKER_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
      scannerHome = tool 'sonar-scanner'
             
