@@ -9,8 +9,8 @@ pipeline {
     environment {
      def commitId = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()    
      IMAGE_NAME =  'dumalbhaskar/petclinic'
-     IMAGE_TAG  =  '${BUILD_NUMBER}-${commitId}'
-     DOCKER_IMAGE = '${IMAGE_NAME}:${IMAGE_TAG}'
+     IMAGE_TAG  =  "${BUILD_NUMBER}-${commitId}"
+     DOCKER_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
      scannerHome = tool 'sonar-scanner'
             
     }
@@ -100,7 +100,7 @@ pipeline {
         stage('image-build') {
             steps {
                 
-                sh "docker build -t $DOCKER_IMAGE ."
+                sh "docker build -t ${DOCKER_IMAGE} ."
             }
         }
         
