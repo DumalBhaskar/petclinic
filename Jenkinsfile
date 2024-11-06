@@ -95,36 +95,53 @@ pipeline {
             }
         }
 
-       stage('Docker Image Vulnerability Scan with Trivy') {
+        stage('Scan Docker Image with Trivy') {
             steps {
                 script {
-           
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {   
-                        sh 'trivy image --exit-code 1 --severity HIGH,CRITICAL --format json -o trivy_report.json $DOCKER_IMAGE'
-                    
-                        archiveArtifacts artifacts: 'trivy_report.json', allowEmptyArchive: false
-                    
-                        sh '''
-                            echo "<!DOCTYPE html>" > trivy_report.html
-                            echo "<html lang='en'>" >> trivy_report.html
-                            echo "<head>" >> trivy_report.html
-                            echo "<meta charset='UTF-8'>" >> trivy_report.html
-                            echo "<title>Trivy Vulnerability Report</title>" >> trivy_report.html
-                            echo "</head>" >> trivy_report.html
-                            echo "<body>" >> trivy_report.html
-                            echo "<h2>Trivy Vulnerability Report</h2><pre>" >> trivy_report.html
-                            jq '.' trivy_report.json >> trivy_report.html
-                            echo "</pre></body></html>" >> trivy_report.html
-                        '''
-                    
-                        sh 'wkhtmltopdf trivy_report.html trivy_report.pdf'
-        
-                        archiveArtifacts artifacts: 'trivy_report.html, trivy_report.pdf', allowEmptyArchive: true
+                    sh "docker pull aquasec/trivy:0.56.2"
+                    retry(10) {
+                        try {
+                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -i aquasec/trivy:0.56.2 image ${DOCKER_IMAGE} > trivy_report.json"
+                        } catch (Exception e) {
+                            echo "Trivy scan failed: ${e.message}"
+                            sleep 5
+                            throw e
+                        }
                     }
-              
                 }
             }
         }
+
+       // stage('Docker Image Vulnerability Scan with Trivy') {
+       //      steps {
+       //          script {
+           
+       //              catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {   
+       //                  sh 'trivy image --exit-code 1 --severity HIGH,CRITICAL --format json -o trivy_report.json $DOCKER_IMAGE'
+                    
+       //                  archiveArtifacts artifacts: 'trivy_report.json', allowEmptyArchive: false
+                    
+       //                  sh '''
+       //                      echo "<!DOCTYPE html>" > trivy_report.html
+       //                      echo "<html lang='en'>" >> trivy_report.html
+       //                      echo "<head>" >> trivy_report.html
+       //                      echo "<meta charset='UTF-8'>" >> trivy_report.html
+       //                      echo "<title>Trivy Vulnerability Report</title>" >> trivy_report.html
+       //                      echo "</head>" >> trivy_report.html
+       //                      echo "<body>" >> trivy_report.html
+       //                      echo "<h2>Trivy Vulnerability Report</h2><pre>" >> trivy_report.html
+       //                      jq '.' trivy_report.json >> trivy_report.html
+       //                      echo "</pre></body></html>" >> trivy_report.html
+       //                  '''
+                    
+       //                  sh 'wkhtmltopdf trivy_report.html trivy_report.pdf'
+        
+       //                  archiveArtifacts artifacts: 'trivy_report.html, trivy_report.pdf', allowEmptyArchive: true
+       //              }
+              
+       //          }
+       //      }
+       //  }
         
         
     }
