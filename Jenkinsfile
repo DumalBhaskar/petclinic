@@ -100,7 +100,7 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     sh ''' trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL --format json -o trivy_report.json ${DOCKER_IMAGE}
                            trivy image --format pdf -o trivy_report.pdf ${DOCKER_IMAGE}'''
-                    archiveArtifacts artifacts: 'trivy_report.pdf', allowEmptyArchive: true // Archive Trivy report
+                    archiveArtifacts artifacts: 'trivy_report.pdf', allowEmptyArchive: true 
                 }
             }
         }
