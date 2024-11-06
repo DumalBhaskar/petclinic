@@ -8,9 +8,12 @@ pipeline {
     
     environment {
      COMMIT_ID = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()    
-     IMAGE_NAME =  'dumalbhaskar/petclinic'
+     IMAGE_NAME =  'petclinic'
      IMAGE_TAG  =  "${BUILD_NUMBER}-${COMMIT_ID}"
-     DOCKER_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
+     // DOCKER_IMAGE = "${IMAGE_NAME}:${IMAGE_TAG}"
+     ACCOUNT_ID = "533267075370"
+     REGION  = "ap-south-1"
+     DOCKER_IMAGE = "${ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
      scannerHome = tool 'sonar-scanner'
             
     }
@@ -154,6 +157,16 @@ pipeline {
             }
         }
 
+        stage('Push Docker Image to ECR') {
+            steps {
+                script {
+                    sh '''
+                    aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
+                    docker push $DOCKER_IMAGE '''
+                }
+            }
+        }
+
        // stage('Docker Image Vulnerability Scan with Trivy') {
        //      steps {
        //          script {
@@ -187,4 +200,10 @@ pipeline {
         
         
     }
+
+    
+
+
+
+    
 }
