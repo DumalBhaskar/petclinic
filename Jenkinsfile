@@ -26,10 +26,19 @@ pipeline {
     }
 
     stages {
+
+         stage('wsclean and checkout') {
+            steps {
+
+                cleanWs()
+                checkout scm
+            }
+        }
+
       
         stage('code test') {
             steps {
-                cleanWs()
+               
                 sh 'mvn test'
             }
         }
