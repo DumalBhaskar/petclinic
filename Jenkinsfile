@@ -95,16 +95,46 @@ pipeline {
             }
         }
 
-       stage("Trivy-docker-image-scanning") {
+       stage('Docker Image Vulnerability Scan with Trivy') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh "trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL --format json -o trivy_report.json ${DOCKER_IMAGE}"
-                    sh "trivy image --format pdf -o trivy_report.pdf ${DOCKER_IMAGE}"
-                    archiveArtifacts artifacts: 'trivy_report.pdf', allowEmptyArchive: true 
+                script {
+                echo 'Scanning Docker image for vulnerabilities with Trivy'
+            
+                sh 'trivy image --exit-code 1 --severity HIGH,CRITICAL --format json -o trivy_report.json $DOCKER_IMAGE'
+            
+                archiveArtifacts artifacts: 'trivy_report.json', allowEmptyArchive: false
+            
+                sh '''
+                    echo "<!DOCTYPE html>" > trivy_report.html
+                    echo "<html lang='en'>" >> trivy_report.html
+                    echo "<head>" >> trivy_report.html
+                    echo "<meta charset='UTF-8'>" >> trivy_report.html
+                    echo "<title>Trivy Vulnerability Report</title>" >> trivy_report.html
+                    echo "</head>" >> trivy_report.html
+                    echo "<body>" >> trivy_report.html
+                    echo "<h2>Trivy Vulnerability Report</h2><pre>" >> trivy_report.html
+                    jq '.' trivy_report.json >> trivy_report.html
+                    echo "</pre></body></html>" >> trivy_report.html
+                '''
+            
+                sh '''
+                    if ! command -v wkhtmltopdf &> /dev/null; then
+                    echo "wkhtmltopdf not found. Installing..."
+                    sudo apt-get install -y wkhtmltopdf
+                    fi
+                '''
+            
+                sh 'wkhtmltopdf trivy_report.html trivy_report.pdf'
+
+                archiveArtifacts artifacts: 'trivy_report.html, trivy_report.pdf', allowEmptyArchive: true
+            
+                def json = readJSON file: 'trivy_report.json'
+                if (json.Vulnerabilities != null && json.Vulnerabilities.size() > 0) {
+                    error "High or critical vulnerabilities found in the Docker image. Build failed."
+                    }
                 }
             }
         }
-
         
         
     }
