@@ -199,7 +199,7 @@ pipeline {
         
         stage('Archive Owasp Zap Report') {
             steps {
-                archiveArtifacts artifacts: "${params.OWASP_ZAP_SCAN_TYPE}_Owasp_Zap_report.html", allowEmptyArchive: false
+                archiveArtifacts artifacts: "${filetype}", allowEmptyArchive: false
             }
         }
 
