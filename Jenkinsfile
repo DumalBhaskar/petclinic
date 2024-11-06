@@ -27,15 +27,6 @@ pipeline {
 
     stages {
 
-         stage('wsclean and checkout') {
-            steps {
-
-                cleanWs()
-                checkout scm
-            }
-        }
-
-      
         stage('code test') {
             steps {
                
@@ -241,7 +232,7 @@ pipeline {
                                 <li>Hadolint Report: hadolint_report.html</li>
                                 <li>OWASP ZAP Report: zap_report.html</li>
                             </ul>""",
-                    attachmentsPattern: "trivy_report.json, hadolint_report.txt, ${env.FILETYPE}",
+                    attachmentsPattern: "trivy_report.pdf, hadolint_report.txt, ${env.FILETYPE}",
                     to: 'dumalbhaskar@gmail.com'
                 )
                 
