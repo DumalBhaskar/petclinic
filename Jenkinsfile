@@ -15,6 +15,13 @@ pipeline {
             
     }
 
+    parameters {
+        choice(name: 'OWASP_ZAP_SCAN_TYPE', choices: ['BASELINE', 'API', 'FULL'], 
+               description: 'Select the OWASP ZAP scan type')
+
+        string(name: 'ZAP_TARGET_URL', defaultValue: 'http://13.203.29.68:5000', description: 'Enter the URL of the application to scan')
+    }
+
     stages {
       
         stage('code test') {
@@ -109,6 +116,41 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+
+        stage('OWASP ZAP Scan') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    script {
+                        echo "The OWASP ZAP Scan Type is ${params.OWASP_ZAP_SCAN_TYPE}"
+                        def zapScanScript = ''
+                        def zapTargetUrl = params.ZAP_TARGET_URL
+                        if (params.OWASP_ZAP_SCAN_TYPE == 'BASELINE') {
+                            zapScanScript = 'zap-baseline.py'
+                        } else if (params.OWASP_ZAP_SCAN_TYPE == 'API') {
+                            zapScanScript = 'zap-api-scan.py'
+                        } else if (params.OWASP_ZAP_SCAN_TYPE == 'FULL') {
+                            zapScanScript = 'zap-full-scan.py'
+                        }
+
+                        def status = sh(script: """#!/bin/bash
+                        docker run -t ghcr.io/zaproxy/zaproxy:stable ${zapScanScript} \
+                        -t ${zapTargetUrl} > ${OWASP_ZAP_SCAN_TYPE}_Owasp_Zap_report.html
+                        """, returnStatus: true)
+
+                        if (status == 0) {
+                            echo "ZAP scan completed successfully."
+                        } else {
+                            error "ZAP scan failed with status code: ${status}"
+                        }
+                    }
+                }
+            }
+        }
+        stage('Archive Owasp Zap Report') {
+            steps {
+                archiveArtifacts artifacts: "${params.OWASP_ZAP_SCAN_TYPE}_Owasp_Zap_report.html", allowEmptyArchive: false
             }
         }
 
