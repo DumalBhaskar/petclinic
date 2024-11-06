@@ -98,7 +98,7 @@ pipeline {
        stage('Docker Image Vulnerability Scanning') {
             steps {
                 script {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {   
+                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {   
                         sh "trivy image --severity HIGH,CRITICAL --format table ${DOCKER_IMAGE} > trivy-report.txt"
                         sh 'libreoffice --headless --convert-to pdf trivy-report.txt --outdir .'
                      }     
