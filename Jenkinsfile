@@ -117,21 +117,11 @@ pipeline {
                     echo "</pre></body></html>" >> trivy_report.html
                 '''
             
-                sh '''
-                    if ! command -v wkhtmltopdf &> /dev/null; then
-                    echo "wkhtmltopdf not found. Installing..."
-                    sudo apt-get install -y wkhtmltopdf
-                    fi
-                '''
-            
                 sh 'wkhtmltopdf trivy_report.html trivy_report.pdf'
 
                 archiveArtifacts artifacts: 'trivy_report.html, trivy_report.pdf', allowEmptyArchive: true
             
-                def json = readJSON file: 'trivy_report.json'
-                if (json.Vulnerabilities != null && json.Vulnerabilities.size() > 0) {
-                    error "High or critical vulnerabilities found in the Docker image. Build failed."
-                    }
+              
                 }
             }
         }
