@@ -29,6 +29,7 @@ pipeline {
       
         stage('code test') {
             steps {
+                cleanWs()
                 sh 'mvn test'
             }
         }
