@@ -102,9 +102,8 @@ pipeline {
                     sh 'libreoffice --headless --convert-to pdf trivy-report.txt --outdir .'
                     archiveArtifacts artifacts: 'trivy-report.pdf', allowEmptyArchive: false
                 }
-            }
-        }
-        
+            }  
+        }
         // stage('Docker Image Vulnerability Scan with Trivy') {
         //     steps {
         //         script {
@@ -149,4 +148,3 @@ pipeline {
         
     }
 }
-
