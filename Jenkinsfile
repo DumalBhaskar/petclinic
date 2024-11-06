@@ -128,20 +128,24 @@ pipeline {
                     script {
                         echo "The OWASP ZAP Scan Type is ${params.OWASP_ZAP_SCAN_TYPE}"
                         def zapScanScript = ''
+                        def filtype = ''
                         def zapTargetUrl = params.ZAP_TARGET_URL
                         if (params.OWASP_ZAP_SCAN_TYPE == 'BASELINE') {
                             zapScanScript = 'zap-baseline.py'
+                            filetype = 'baseline.html'
                         } else if (params.OWASP_ZAP_SCAN_TYPE == 'API') {
                             zapScanScript = 'zap-api-scan.py'
+                            filetype = 'api.html'
                         } else if (params.OWASP_ZAP_SCAN_TYPE == 'FULL') {
                             zapScanScript = 'zap-full-scan.py'
+                            filetype = 'full-scan.html'
                         }
-
+                        echo "${filetype}"
                         def status = sh(script: """#!/bin/bash
                         docker run -t ghcr.io/zaproxy/zaproxy:stable ${zapScanScript} \
-                        -t ${zapTargetUrl} > ${OWASP_ZAP_SCAN_TYPE}_Owasp_Zap_report.html
+                        -t ${zapTargetUrl} > ${filetype}
                         """, returnStatus: true)
-
+                        env.FILETYPE = filetype
                         if (status == 0) {
                             echo "ZAP scan completed successfully."
                         } else {
@@ -221,7 +225,7 @@ pipeline {
                                 <li>Hadolint Report: hadolint_report.html</li>
                                 <li>OWASP ZAP Report: zap_report.html</li>
                             </ul>""",
-                    attachmentsPattern: "trivy_report.json, hadolint_report.txt, ${params.OWASP_ZAP_SCAN_TYPE}_Owasp_Zap_report.html",
+                    attachmentsPattern: "trivy_report.json, hadolint_report.txt, ${env.FILETYPE}",
                     to: 'dumalbhaskar@gmail.com'
                 )
                 
