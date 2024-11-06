@@ -101,9 +101,9 @@ pipeline {
                     
                     catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
                         sh "trivy image --severity HIGH,CRITICAL --format table ${DOCKER_IMAGE} > trivy-report.txt"
-                        sh 'libreoffice --headless --convert-to pdf trivy-report.txt --outdir .'
-                        archiveArtifacts artifacts: 'trivy-report.pdf', allowEmptyArchive: false
+                        sh 'libreoffice --headless --convert-to pdf trivy-report.txt --outdir .' 
                     }
+                    archiveArtifacts artifacts: 'trivy-report.pdf', allowEmptyArchive: true
                 }
             }  
         }
