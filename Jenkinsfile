@@ -95,14 +95,12 @@ pipeline {
             }
         }
 
-       stage('Docker Image Vulnerability Scanning') {
+       stage("Trivy-docker-image-scanning") {
             steps {
-                script {
-                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {   
-                        sh "trivy image --severity HIGH,CRITICAL --format table ${DOCKER_IMAGE} > trivy-report.txt"
-                        sh 'libreoffice --headless --convert-to pdf trivy-report.txt --outdir .'
-                     }     
-                    archiveArtifacts artifacts: 'trivy-report.pdf', allowEmptyArchive: true
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh ''' trivy image --no-progress --exit-code 1 --severity HIGH,CRITICAL --format json -o trivy_report.json ${DOCKER_IMAGE}
+                           trivy image --format pdf -o trivy_report.pdf ${DOCKER_IMAGE}'''
+                    archiveArtifacts artifacts: 'trivy_report.pdf', allowEmptyArchive: true // Archive Trivy report
                 }
             }
         }
