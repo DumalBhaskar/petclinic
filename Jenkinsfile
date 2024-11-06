@@ -99,7 +99,7 @@ pipeline {
             steps {
                 script {
                     
-                    catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                         sh "trivy image --severity HIGH,CRITICAL --format table ${DOCKER_IMAGE} > trivy-report.txt"
                         sh 'libreoffice --headless --convert-to pdf trivy-report.txt --outdir .' 
                     }
